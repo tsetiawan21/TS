@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Today</title>
+<link rel="stylesheet" href="../../shared/ts.css">
+<style>
+.big{font-size:38px;line-height:1.05;font-weight:700;letter-spacing:-.035em}.big small{font-size:17px;color:var(--dim);font-weight:600;letter-spacing:0;margin-left:4px}
+.cap{color:var(--dim);font-size:13px;margin-top:6px;max-width:210px}
+.hero{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.ring3{width:84px;height:84px;flex:none;overflow:visible}
+.ring3 .t{fill:none;stroke:var(--fill);stroke-width:6;stroke-linecap:round}
+.ring3 .p{fill:none;stroke:var(--fg);stroke-width:6;stroke-linecap:round;transition:stroke-dasharray .9s cubic-bezier(.2,.8,.2,1)}
+.ring3 text{fill:var(--fg);font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.hero.pulse .ring3{animation:pop .9s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.14)}100%{transform:scale(1)}}
+.pil{display:flex;align-items:center;gap:14px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
+.ico{width:42px;height:42px;border-radius:12px;background:var(--fill);display:grid;place-items:center;flex:none}
+.ico svg{width:20px;height:20px;fill:none;stroke:var(--fg);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pil .t{flex:1;min-width:0}.pil b{font-size:15px;font-weight:600}.pil .m{color:var(--dim);font-size:13px;margin:2px 0 8px}.pil .bar{height:4px}
+.live{display:flex;align-items:center;gap:14px;width:100%;border:1.5px solid var(--fg);border-radius:18px;padding:14px 18px;margin-bottom:12px;background:var(--card)}
+.live .dot{width:9px;height:9px;border-radius:50%;background:var(--fg);flex:none;animation:blink 1.4s ease-in-out infinite}.live.paused .dot{animation:none;opacity:.4}
+@keyframes blink{50%{opacity:.25}}
+.live b{display:block;font-size:14px}.live span{color:var(--dim);font-size:12.5px}.live .clk{margin-left:auto;font-size:22px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.hg{display:grid;grid-template-columns:64px repeat(7,1fr) 34px;gap:8px 6px;align-items:center}
+.hg .h{font-size:11px;color:var(--dim);text-align:center;font-weight:600}.hg .h.now{color:var(--fg)}
+.hg .n{font-size:13px;font-weight:500}.hg .s{font-size:12px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+.d{display:block;aspect-ratio:1;border-radius:50%;background:var(--fg);max-width:22px;width:100%;margin:0 auto}
+.d.n0{background:none;box-shadow:inset 0 0 0 1px var(--line)}.d.n1{opacity:.4}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat3 .eyebrow{font-size:11.5px;font-weight:600;margin-bottom:5px}.stat3 b{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat3 span{display:block;color:var(--dim);font-size:12px;margin-top:4px;line-height:1.35}.stat3 .bar{margin-top:8px}
+.hm-m,.hm-g{display:grid;grid-template-columns:16px repeat(12,1fr);gap:4px}
+.hm-m{margin-bottom:5px}.hm-m span{font-size:10px;color:var(--dim);font-weight:600;white-space:nowrap;overflow:visible}
+.hm-g{grid-template-rows:repeat(7,auto);grid-auto-flow:column}
+.hm-g .lb{font-size:9.5px;color:var(--dim);font-weight:600;align-self:center;line-height:1}
+.cell{display:block;width:100%;aspect-ratio:1;border:0;padding:0;border-radius:4px;transition:transform .12s}
+.cell:active{transform:scale(.85)}
+.cell.fut{background:none;box-shadow:inset 0 0 0 1px var(--line);opacity:.5}
+.cell.now{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--fg)}
+.cell.sel{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--dim)}
+.hmd{min-height:40px;margin-top:14px;font-size:13px;color:var(--dim)}.hmd b{color:var(--fg)}
+.hmf{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}
+textarea.nt{width:100%;min-height:68px;resize:none;background:var(--fill);border:1px solid transparent;border-radius:12px;padding:12px 13px;line-height:1.4}
+textarea.nt::placeholder{color:var(--dim)}
+details.old{margin-top:12px}details.old summary{cursor:pointer;color:var(--dim);font-size:13px;font-weight:600;list-style:none}details.old summary::-webkit-details-marker{display:none}
+details.old summary::after{content:' +'}details.old[open] summary::after{content:' \2212'}
+.on1{padding:10px 0 2px;border-top:1px solid var(--line);margin-top:12px;font-size:13.5px}.on1 b{font-weight:600}
+.nag{border-color:var(--fg)}.nag b{font-size:15px}.nag p{margin:4px 0 0;font-size:13px}
+.welcome h2{margin:0 0 6px;font-size:18px;letter-spacing:-.02em}.welcome p{color:var(--dim);font-size:13.5px}
+</style></head><body>
+<div class="page" id="v"></div><div id="toast"></div>
+<script src="../../version.js"></script>
+<script src="../../shared/ts.js"></script>
+<script>
+(function(){
+'use strict';
+var p2=TS.p2,dkey=TS.dkey,addDays=TS.addDays,esc=TS.esc,fmtDur=TS.fmtDur;
+var IC={study:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',train:'<path d="M6.5 6.5l11 11M4 9l5-5M15 20l5-5M3 21l3-3M18 6l3-3"/>',trade:'<path d="M3 17l5-6 4 3 8-9"/><path d="M15 5h5v5"/>'};
+var first=true,selDay=null,noteT=0,MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function plural(n,w){return n+' '+w+(n===1?'':'s')}
+function go(app,view){try{parent.postMessage({hubGo:app,view:view||null},'*')}catch(e){}}
+
+/* ---------- ring: three segments, one per pillar ---------- */
+function ring(done,f){
+  var r=30,c=2*Math.PI*r,gap=13,seg=c/3-gap,gapDeg=gap/c*360,P=[f.study.pct/100,f.train.lvl>=2?1:0,f.trade.pct/100];
+  var t='',p='';
+  for(var i=0;i<3;i++){
+    var rot='rotate('+(-90+i*120+gapDeg/2)+' 40 40)',len=P[i]>0?Math.max(.06,P[i])*seg:0;
+    t+='<circle class="t" cx="40" cy="40" r="'+r+'" stroke-dasharray="'+seg+' '+c+'" transform="'+rot+'"/>';
+    if(len>0)p+='<circle class="p" cx="40" cy="40" r="'+r+'" data-d="'+len+' '+c+'" stroke-dasharray="'+(first?'0.01 '+c:len+' '+c)+'" transform="'+rot+'"/>';
+  }
+  return '<svg class="ring3" viewBox="0 0 80 80" role="img" aria-label="'+done+' of 3 pillars done">'+t+p+'<text x="40" y="46" text-anchor="middle">'+done+'/3</text></svg>';
+}
+function hint(f,thr){
+  var open=[['study',f.study],['train',f.train],['trade',f.trade]].filter(function(x){return x[1].lvl<2});
+  if(!open.length)return 'Perfect day. Study, training and trading are all done.';
+  open.sort(function(a,b){return b[1].lvl-a[1].lvl});
+  var p=open[0][0],x=open[0][1];
+  var lead=(open.length)+' left today. ';
+  if(p==='study')return lead+(x.lvl?'Study '+(thr-x.min)+' more minutes.':'Start with '+thr+' minutes of study.');
+  if(p==='train')return lead+'Log a workout.';
+  return lead+(x.n?'Close out your trading day.':x.plan?'Your plan is ready. Take or skip the trade.':'Plan your trading session.');
+}
+/* ---------- heatmap: last 12 weeks, one cell per day ---------- */
+function heat(I,now){
+  var today=dkey(now),start=addDays(TS.sow(now),-77),cells='',months='<span></span>',lastM=-1,perfect=0,active=0;
+  var lbl=['M','','W','','F','','S'];
+  for(var d=0;d<7;d++)cells+='<span class="lb">'+lbl[d]+'</span>';
+  for(var w=0;w<12;w++){
+    var mon=addDays(start,w*7),m=mon.getMonth();
+    months+='<span>'+(m!==lastM?MON[m]:'')+'</span>';lastM=m;
+    for(var d2=0;d2<7;d2++){
+      var day=addDays(mon,d2),k=dkey(day);
+      if(k>today){cells+='<i class="cell fut"></i>';continue}
+      var s=I.score(k);if(s===3)perfect++;if(s>0)active++;
+      cells+='<button class="cell l'+s+(k===today?' now':'')+(k===selDay?' sel':'')+'" data-day="'+k+'" aria-label="'+day.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})+': '+s+' of 3 done"></button>';
+    }
+  }
+  return {html:'<div class="hm-m">'+months+'</div><div class="hm-g">'+cells+'</div>',perfect:perfect,active:active};
+}
+function dayDetail(I,k){
+  var f=I.facts(k),d=new Date(k+'T12:00:00'),h='<b>'+d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+'</b><br>',a=[];
+  if(f.study.min)a.push('Study '+fmtDur(f.study.min));
+  if(f.train.n)a.push('Training'+(f.train.name?' ('+esc(f.train.name)+')':''));
+  if(f.trade.n)a.push('Trading '+plural(f.trade.n,'trade')+(f.trade.closed?', '+TS.fmtR(f.trade.r):''));else if(f.trade.plan)a.push('Trading plan ready');
+  return h+(a.length?a.join(' &middot; '):'Nothing logged.');
+}
+/* ---------- render ---------- */
+function render(){
+  var ae=document.activeElement;if(ae&&ae.id==='nt')return;
+  var D=TS.load(),I=TS.index(D),now=new Date(),k=dkey(now),f=I.facts(k),hr=now.getHours(),thr=I.thr,st=TS.settings();
+  var done=(f.study.lvl>=2)+(f.train.lvl>=2)+(f.trade.lvl>=2);
+  var chip=function(l,pct){return '<span class="chip'+(l>=2?' done':'')+'">'+(l>=2?'Done':l===1?'In progress':'Not started')+'</span>'};
+  var sS=I.streak('study',now),sT=I.streak('train',now),sR=I.streak('trade',now);
+  var trM=f.trade.n?(plural(f.trade.n,'trade')+', '+TS.fmtR(f.trade.r)+(f.trade.rules!=null?', rules '+f.trade.rules+'%':'')):f.trade.plan?'Plan ready, no trades yet':'No plan or trades yet';
+  var tm=TS.timer(D);
+  var rows=[
+   ['study','Study',f.study.min?fmtDur(f.study.min)+' in '+plural(f.study.n,'session'):'Nothing logged yet',f.study.lvl,f.study.pct,'goals'],
+   ['train','Training',f.train.n?(f.train.name||'Workout')+', +'+f.train.xp+' XP':'No workout logged'+(D.BP.streak?'. Streak '+D.BP.streak+' days':''),f.train.lvl,f.train.lvl>=2?100:0,'berserker'],
+   ['trade','Trading',trM,f.trade.lvl,f.trade.pct,'trading']];
+  /* week */
+  var ws=TS.sow(now),wMin=0,wTrain=0,wR=0,wClosed=0,wRules=0;
+  for(var i=0;i<7;i++){var x=I.facts(dkey(addDays(ws,i)));wMin+=x.study.min;wTrain+=x.train.n;wR+=x.trade.r;wClosed+=x.trade.closed;if(x.trade.rules!=null)wRules+=x.trade.rules*x.trade.closed}
+  var gs=D.G.settings||{},goal=900+(gs.tradingMin||0)+('learnMin' in gs?gs.learnMin||0:180);   /* MBA 15h, plus the optional trading track and the Learning Path (3h unless changed) */
+  /* last 7 days dots */
+  var days=[];for(var j=6;j>=0;j--)days.push(addDays(now,-j));
+  var full=0,cells={study:'',train:'',trade:''};
+  days.forEach(function(d){var x=I.facts(dkey(d));if(x.study.lvl>=2&&x.train.lvl>=2&&x.trade.lvl>=2)full++;
+    ['study','train','trade'].forEach(function(p){cells[p]+='<i class="d n'+x[p].lvl+'"></i>'})});
+  var head='<span></span>'+days.map(function(d,i){return '<span class="h'+(i===6?' now':'')+'">'+d.toLocaleDateString('en-GB',{weekday:'narrow'})+'</span>'}).join('')+'<span></span>';
+  var gridRow=function(n,p,s){return '<span class="n">'+n+'</span>'+cells[p]+'<span class="s">'+s+'d</span>'};
+  var hm=heat(I,now);
+  /* backup */
+  var last=Number(localStorage.getItem('hub.lastBackup')||0),ageD=last?Math.floor((Date.now()-last)/864e5):null;
+  var hasData=((D.G.sessions||[]).length+D.BH.length+((D.T.trades)||[]).length)>0;
+  var nag=(!window.__DEMO__&&hasData&&(!last||ageD>=7))?'<section class="card nag"><b>'+(last?'Last backup was '+ageD+' days ago':'No backup yet')+'</b><p class="dim">Your data lives only on this phone. A backup protects it if you reinstall the app or lose the phone.</p><div class="acts"><button class="btn" data-do="export">Back up now</button></div></section>':'';
+  var welcome=hasData?'':'<section class="card welcome"><h2>Welcome to TS</h2><p>Three habits, one scorecard. Study with the timer in Goals, train in Berserker, plan and journal your trades in Trading. Whatever you log shows up here by itself.</p></section>';
+  var liveCard='';
+  if(tm){var left=tm.target>0?Math.max(0,tm.target*60000-tm.elapsed):tm.elapsed;
+    liveCard='<button class="live'+(tm.status==='paused'?' paused':'')+'" data-go="goals" data-view="timer"><i class="dot"></i><span><b>'+(tm.status==='paused'?'Session paused':'Study session running')+'</b><span>'+esc(tm.category)+(tm.topic?', '+esc(tm.topic):'')+'</span></span><span class="clk" id="lt" data-st="'+tm.status+'" data-t="'+tm.target+'" data-a="'+tm.elapsed+'" data-at="'+Date.now()+'">'+clock(left)+'</span></button>'}
+  var note=(TS.rd('hub.notes.v1')||{}),old=Object.keys(note).filter(function(d){return d!==k&&note[d]}).sort().reverse().slice(0,7);
+  var extra=
+   '<section class="card"><div class="ch"><h2>Settings</h2></div><div class="row2"><span>Study counts as done at</span><div class="seg">'+[30,45,60,90].map(function(m){return '<button class="'+(m===thr?'on':'')+'" data-min="'+m+'">'+m+'m</button>'}).join('')+'</div></div>'+
+   '<div class="row2"><span>Haptic feedback</span><div class="seg"><button class="'+(st.haptics?'on':'')+'" data-hap="1">On</button><button class="'+(!st.haptics?'on':'')+'" data-hap="0">Off</button></div></div></section>'+
+   '<section class="card"><div class="ch"><h2>Backup and tools</h2><span class="tag">'+(last?'Last: '+new Date(last).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'Never backed up')+'</span></div><div class="acts" style="margin-top:0"><button class="btn" data-do="export">Export backup</button><button class="btn ghost" data-do="import">Restore</button></div><div class="acts"><button class="btn ghost" data-do="notif">Test notification</button></div><p class="note">Export opens the share sheet: save the file to Drive, email it, or send it to yourself. Restore replaces all data in the app with a backup file. Backups include your daily notes.</p><input type="file" id="imp" accept=".json,application/json" hidden></section>'+
+   '<p class="note center" style="margin-bottom:8px">TS build '+esc(window.TS_BUILD||'dev')+'. Everything works offline and stays on this phone.</p>';
+  var v=document.getElementById('v'),y=v.scrollTop;
+  v.innerHTML=
+   '<div class="greet"><h1>'+(hr<12?'Good morning':hr<18?'Good afternoon':'Good evening')+'</h1><p>'+now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})+'</p></div>'+nag+welcome+liveCard+
+   '<section class="card hero" id="hero"><div><div class="eyebrow">Today</div><div class="big">'+done+'<small>of 3 done</small></div><div class="cap">'+hint(f,thr)+'</div></div>'+ring(done,f)+'</section>'+
+   rows.map(function(r){return '<button class="pil" data-go="'+r[5]+'"><span class="ico"><svg viewBox="0 0 24 24">'+IC[r[0]]+'</svg></span><span class="t"><b>'+r[1]+'</b><div class="m">'+r[2]+'</div><div class="bar"><b style="width:'+r[4]+'%"></b></div></span>'+chip(r[3])+'</button>'}).join('')+
+   '<section class="card"><div class="ch"><h2>This week</h2><span class="tag">Mon to Sun</span></div><div class="stat3">'+
+     '<div><div class="eyebrow">Study</div><b>'+TS.fmtH(wMin)+'</b><span>of '+TS.fmtH(goal)+' goal</span><div class="bar"><b style="width:'+Math.min(100,Math.round(wMin/goal*100))+'%"></b></div></div>'+
+     '<div><div class="eyebrow">Training</div><b>'+wTrain+'</b><span>workout'+(wTrain===1?'':'s')+' this week</span></div>'+
+     '<div><div class="eyebrow">Trading</div><b>'+(wClosed?TS.fmtR(wR):'None')+'</b><span>'+(wClosed?plural(wClosed,'closed trade')+', rules '+Math.round(wRules/wClosed)+'%':'no closed trades')+'</span></div></div></section>'+
+   '<section class="card"><div class="ch"><h2>Last 7 days</h2><span class="tag">'+plural(full,'full day')+'</span></div><div class="hg">'+head+gridRow('Study','study',sS)+gridRow('Training','train',sT)+gridRow('Trading','trade',sR)+'</div>'+
+   '<p class="note">Solid means done, faint means started. Study counts as done at '+thr+' minutes. The number on the right is each current streak.</p></section>'+
+   '<section class="card"><div class="ch"><h2>12 weeks</h2><span class="tag">'+plural(hm.perfect,'perfect day')+'</span></div>'+hm.html+
+     '<div class="hmd" id="hmd">'+(selDay?dayDetail(I,selDay):'Tap a day to see what you did.')+'</div>'+
+     '<div class="hmf"><span class="tag">'+hm.active+' active days</span><div class="legend"><span>0</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><span>3 done</span></div></div></section>'+
+   '<section class="card"><div class="ch"><h2>Today\'s note</h2><span class="tag" id="nts"></span></div><textarea class="nt" id="nt" maxlength="400" placeholder="One line: what went well, what to fix tomorrow?">'+esc(note[k]||'')+'</textarea>'+
+     (old.length?'<details class="old"><summary>Previous notes</summary>'+old.map(function(d){return '<div class="on1"><span class="dim sm">'+new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+'</span><br><b>'+esc(note[d])+'</b></div>'}).join('')+'</details>':'')+'</section>'+extra;
+  v.scrollTop=y;
+  /* animate rings in on the very first paint only */
+  if(first){requestAnimationFrame(function(){requestAnimationFrame(function(){v.querySelectorAll('.ring3 .p').forEach(function(c){c.setAttribute('stroke-dasharray',c.dataset.d)})})});first=false}
+  /* a quiet celebration, once per day */
+  if(done===3&&localStorage.getItem('hub.celebrated')!==k){try{localStorage.setItem('hub.celebrated',k)}catch(e){}
+    var h=document.getElementById('hero');if(h)h.classList.add('pulse');TS.haptic([18,70,18,70,30])}
+  tick();
+}
+function clock(ms){var s=Math.floor(ms/1000),h=Math.floor(s/3600);return (h?h+':':'')+p2(Math.floor(s%3600/60))+':'+p2(s%60)}
+function tick(){var el=document.getElementById('lt');if(!el)return;
+  var a=+el.dataset.a+(el.dataset.st==='running'?Date.now()-(+el.dataset.at):0),t=+el.dataset.t;
+  el.textContent=clock(t>0?Math.max(0,t*60000-a):a)}
+setInterval(tick,1000);
+
+/* ---------- backup and restore ---------- */
+function snapshot(){var o={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);o[k]=localStorage.getItem(k)}return{app:'ts-backup',v:1,build:window.TS_BUILD||'dev',at:new Date().toISOString(),data:o}}
+async function doExport(){
+  var json=JSON.stringify(snapshot()),name='ts-backup-'+dkey(new Date())+'.json',FS=TS.plug('Filesystem'),SH=TS.plug('Share');
+  try{
+    if(FS&&SH){var r=await FS.writeFile({path:name,data:json,directory:'CACHE',encoding:'utf8'});await SH.share({title:'TS backup',text:'TS data backup',url:r.uri,dialogTitle:'Save your TS backup'})}
+    else{var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+    localStorage.setItem('hub.lastBackup',String(Date.now()));TS.toast('Backup exported. Keep the file somewhere safe.');render();
+  }catch(e){TS.toast('Export did not finish. Try again.')}
+}
+function doImport(f){
+  if(!f)return;var r=new FileReader();
+  r.onload=function(){
+    var o;try{o=JSON.parse(r.result);if(o.app!=='ts-backup'||!o.data||typeof o.data!=='object')throw 0}catch(e){TS.toast('That file is not a TS backup.');return}
+    var n=Object.keys(o.data).length;
+    if(!confirm('Replace ALL current data with this backup ('+n+' items)? This cannot be undone.'))return;
+    var before=snapshot().data;
+    try{localStorage.clear();Object.keys(o.data).forEach(function(k){localStorage.setItem(k,String(o.data[k]))})}
+    catch(e){try{localStorage.clear();Object.keys(before).forEach(function(k){localStorage.setItem(k,before[k])})}catch(e2){}TS.toast('Restore failed. Your previous data was kept.');return}
+    TS.toast('Restored. Reloading...');setTimeout(function(){try{parent.location.reload()}catch(e){location.reload()}},700);
+  };
+  r.readAsText(f);
+}
+async function testNotif(){
+  var LN=TS.plug('LocalNotifications');if(!LN){TS.toast('Notifications only work in the installed app.');return}
+  try{
+    var p=await LN.checkPermissions();if(p.display!=='granted')p=await LN.requestPermissions();
+    if(p.display!=='granted'){TS.toast('Notifications are blocked. Allow them in Android settings for TS.');return}
+    await LN.createChannel({id:'study',name:'Study reminders',importance:3});
+    await LN.schedule({notifications:[{id:900002,title:'TS test',body:'Notifications are working.',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true},channelId:'study'}]});
+    TS.toast('Test notification in 5 seconds. Lock the screen to check.');
+  }catch(e){TS.toast('Could not schedule the test.')}
+}
+/* ---------- events (one delegated listener) ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.dataset.go){TS.haptic(6);var view=t.dataset.view||null;if(!view&&t.dataset.go==='goals'){var tm=TS.timer(TS.load());if(tm)view='timer'}go(t.dataset.go,view);return}
+  if(t.dataset.min){TS.haptic(6);TS.setSetting('studyMin',Number(t.dataset.min));render();return}
+  if(t.dataset.hap!=null){TS.setSetting('haptics',t.dataset.hap==='1');TS.haptic(12);render();return}
+  if(t.dataset.day){TS.haptic(5);selDay=t.dataset.day;document.querySelectorAll('.cell.sel').forEach(function(c){c.classList.remove('sel')});t.classList.add('sel');
+    document.getElementById('hmd').innerHTML=dayDetail(TS.index(TS.load()),selDay);return}
+  var d=t.dataset.do;if(d==='export')doExport();else if(d==='import'){var i=document.getElementById('imp');i&&i.click()}else if(d==='notif')testNotif();
+});
+document.addEventListener('change',function(e){if(e.target.id==='imp'){doImport(e.target.files[0]);e.target.value=''}});
+function saveNote(el){
+  clearTimeout(noteT);var n=TS.rd('hub.notes.v1')||{},k=dkey(new Date()),v=el.value.trim();if(v)n[k]=v;else delete n[k];TS.wr('hub.notes.v1',n);
+  var s=document.getElementById('nts');if(s){s.textContent='Saved';setTimeout(function(){var q=document.getElementById('nts');if(q)q.textContent=''},1400)}
+}
+document.addEventListener('input',function(e){if(e.target.id!=='nt')return;var el=e.target;clearTimeout(noteT);noteT=setTimeout(function(){saveNote(el)},500)});
+document.addEventListener('focusout',function(e){if(e.target.id==='nt'){saveNote(e.target);setTimeout(render,60)}});
+TS.onData(render);
+render();
+})();
+</script>
+</body></html>

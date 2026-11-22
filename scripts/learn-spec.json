@@ -1,0 +1,480 @@
+{
+ "categories": [
+  {
+   "key": "finance",
+   "id": "Financial & Business Education",
+   "file": "finance",
+   "ev": "none",
+   "see": false,
+   "subjects": [
+    {
+     "k": "Financial Literacy and Personal Finance",
+     "levels": "BIA"
+    },
+    {
+     "k": "Compound Interest",
+     "levels": "BA"
+    },
+    {
+     "k": "Opportunity Cost",
+     "levels": "BIA"
+    },
+    {
+     "k": "Inflation and Purchasing Power",
+     "levels": "BIA"
+    },
+    {
+     "k": "Cash Flow Management",
+     "levels": "BIA"
+    },
+    {
+     "k": "Assets vs. Liabilities",
+     "levels": "BIA"
+    },
+    {
+     "k": "Budgeting, Saving and Debt Management",
+     "levels": "BIA"
+    },
+    {
+     "k": "Behavioral Finance",
+     "levels": "BIA"
+    },
+    {
+     "k": "Tax Structures and Tax Planning",
+     "levels": "BIA"
+    },
+    {
+     "k": "Investing Fundamentals",
+     "levels": "BIA"
+    },
+    {
+     "k": "Stocks, Bonds, ETFs and Dividends",
+     "levels": "BIA"
+    },
+    {
+     "k": "Portfolio Management and Risk Management",
+     "levels": "BIA"
+    },
+    {
+     "k": "Financial Statements and Company Valuation",
+     "levels": "BIA"
+    },
+    {
+     "k": "Economics of Business",
+     "levels": "BA"
+    },
+    {
+     "k": "Entrepreneurship and Business Models",
+     "levels": "BA"
+    },
+    {
+     "k": "Business Strategy and Management",
+     "levels": "BA"
+    },
+    {
+     "k": "Corporate Finance",
+     "levels": "BA"
+    },
+    {
+     "k": "Financial Independence and Wealth Building",
+     "levels": "BIA"
+    }
+   ]
+  },
+  {
+   "key": "economics",
+   "id": "Economics",
+   "file": "economics",
+   "ev": "opt",
+   "evLabel": "Where economists disagree",
+   "see": false,
+   "subjects": [
+    {
+     "k": "Microeconomics",
+     "levels": "BIA"
+    },
+    {
+     "k": "Macroeconomics",
+     "levels": "BIA"
+    },
+    {
+     "k": "Supply and Demand",
+     "levels": "BIA"
+    },
+    {
+     "k": "Inflation and Interest Rates",
+     "levels": "BIA"
+    },
+    {
+     "k": "Monetary and Fiscal Policy",
+     "levels": "BIA"
+    },
+    {
+     "k": "Economic Growth and Recession",
+     "levels": "BIA"
+    },
+    {
+     "k": "International Trade",
+     "levels": "BIA"
+    },
+    {
+     "k": "Global Financial Systems",
+     "levels": "BIA"
+    },
+    {
+     "k": "Behavioral Economics",
+     "levels": "BIA"
+    },
+    {
+     "k": "Economic Inequality",
+     "levels": "BIA"
+    },
+    {
+     "k": "Development Economics",
+     "levels": "BIA"
+    }
+   ]
+  },
+  {
+   "key": "philosophy",
+   "id": "Philosophy",
+   "file": "philosophy",
+   "ev": "none",
+   "see": false,
+   "subjects": [
+    {
+     "k": "Ancient Greek Philosophy",
+     "levels": "BIA"
+    },
+    {
+     "k": "Eastern Philosophy",
+     "levels": "BIA"
+    },
+    {
+     "k": "Ethics and Morality",
+     "levels": "BIA"
+    },
+    {
+     "k": "Logic and Critical Thinking",
+     "levels": "BIA"
+    },
+    {
+     "k": "Metaphysics and Epistemology",
+     "levels": "BIA"
+    },
+    {
+     "k": "Political Philosophy",
+     "levels": "BIA"
+    },
+    {
+     "k": "Existentialism",
+     "levels": "BIA"
+    },
+    {
+     "k": "Stoicism",
+     "levels": "BIA"
+    },
+    {
+     "k": "Modern and Contemporary Philosophy",
+     "levels": "BIA"
+    },
+    {
+     "k": "Influential Philosophers and Their Ideas",
+     "levels": "BIA"
+    }
+   ]
+  },
+  {
+   "key": "body",
+   "id": "Body Language",
+   "file": "body",
+   "ev": "req",
+   "evLabel": "Evidence and limits",
+   "see": false,
+   "subjects": [
+    {
+     "k": "Nonverbal Communication",
+     "levels": "BIA"
+    },
+    {
+     "k": "Facial Expressions",
+     "levels": "BIA"
+    },
+    {
+     "k": "Eye Contact",
+     "levels": "BIA"
+    },
+    {
+     "k": "Gestures and Posture",
+     "levels": "BIA"
+    },
+    {
+     "k": "Voice and Tone",
+     "levels": "BIA"
+    },
+    {
+     "k": "Personal Space",
+     "levels": "BIA"
+    },
+    {
+     "k": "Emotional Expressions",
+     "levels": "BIA"
+    },
+    {
+     "k": "Cultural Differences",
+     "levels": "BIA"
+    },
+    {
+     "k": "Body Language in Leadership and Negotiation",
+     "levels": "BIA"
+    },
+    {
+     "k": "Social and Professional Communication",
+     "levels": "BIA"
+    }
+   ]
+  },
+  {
+   "key": "art",
+   "id": "Art History",
+   "file": "art",
+   "ev": "none",
+   "see": true,
+   "subjects": [
+    {
+     "k": "Prehistoric Art",
+     "levels": "BIA"
+    },
+    {
+     "k": "Ancient Egyptian, Greek and Roman Art",
+     "levels": "BIA"
+    },
+    {
+     "k": "Asian and Islamic Art",
+     "levels": "BIA"
+    },
+    {
+     "k": "Medieval Art",
+     "levels": "BIA"
+    },
+    {
+     "k": "Renaissance",
+     "levels": "BIA"
+    },
+    {
+     "k": "Baroque and Rococo",
+     "levels": "BIA"
+    },
+    {
+     "k": "Neoclassicism and Romanticism",
+     "levels": "BIA"
+    },
+    {
+     "k": "Impressionism and Post-Impressionism",
+     "levels": "BIA"
+    },
+    {
+     "k": "Modern Art",
+     "levels": "BIA"
+    },
+    {
+     "k": "Contemporary Art",
+     "levels": "BIA"
+    },
+    {
+     "k": "Architecture, Sculpture, Painting and Photography",
+     "levels": "BIA"
+    },
+    {
+     "k": "Influential Artists and Their Contributions",
+     "levels": "BIA"
+    }
+   ]
+  },
+  {
+   "key": "geopolitics",
+   "id": "Geopolitics",
+   "file": "geopolitics",
+   "ev": "req",
+   "evLabel": "Facts, interpretations, predictions",
+   "see": false,
+   "subjects": [
+    {
+     "k": "Foundations of Geopolitics",
+     "levels": "BIA"
+    },
+    {
+     "k": "Political Geography",
+     "levels": "BIA"
+    },
+    {
+     "k": "International Relations",
+     "levels": "BIA"
+    },
+    {
+     "k": "Major Global Powers",
+     "levels": "BIA"
+    },
+    {
+     "k": "US-China Relations",
+     "levels": "BIA"
+    },
+    {
+     "k": "Russia and Europe",
+     "levels": "BIA"
+    },
+    {
+     "k": "Middle East Politics",
+     "levels": "BIA"
+    },
+    {
+     "k": "ASEAN and Southeast Asia",
+     "levels": "BIA"
+    },
+    {
+     "k": "Global Trade and Supply Chains",
+     "levels": "BIA"
+    },
+    {
+     "k": "Energy and Natural Resources",
+     "levels": "BIA"
+    },
+    {
+     "k": "Military Strategy and Security",
+     "levels": "BIA"
+    },
+    {
+     "k": "International Organizations",
+     "levels": "BIA"
+    },
+    {
+     "k": "Global Conflicts and Diplomacy",
+     "levels": "BIA"
+    }
+   ]
+  },
+  {
+   "key": "culinary",
+   "id": "Culinary Basics",
+   "file": "culinary",
+   "ev": "none",
+   "see": false,
+   "subjects": [
+    {
+     "k": "Kitchen Fundamentals",
+     "levels": "BIA"
+    },
+    {
+     "k": "Cooking Equipment and Knife Skills",
+     "levels": "BIA"
+    },
+    {
+     "k": "Food Safety and Hygiene",
+     "levels": "BIA"
+    },
+    {
+     "k": "Cooking Methods",
+     "levels": "BIA"
+    },
+    {
+     "k": "Ingredients and Flavor Profiles",
+     "levels": "BIA"
+    },
+    {
+     "k": "Herbs and Spices",
+     "levels": "BIA"
+    },
+    {
+     "k": "Stocks, Sauces and Seasoning",
+     "levels": "BIA"
+    },
+    {
+     "k": "Meat, Seafood, Vegetables and Grains",
+     "levels": "BIA"
+    },
+    {
+     "k": "Basic Baking",
+     "levels": "BIA"
+    },
+    {
+     "k": "International Cuisines",
+     "levels": "BIA"
+    },
+    {
+     "k": "Indonesian Culinary Traditions",
+     "levels": "BIA"
+    },
+    {
+     "k": "Meal Planning and Food Preparation",
+     "levels": "BIA"
+    },
+    {
+     "k": "Basic Nutrition",
+     "levels": "BIA"
+    }
+   ]
+  },
+  {
+   "key": "psychology",
+   "id": "Psychology",
+   "file": "psychology",
+   "ev": "req",
+   "evLabel": "Evidence status",
+   "see": false,
+   "subjects": [
+    {
+     "k": "Introduction to Psychology",
+     "levels": "BIA"
+    },
+    {
+     "k": "Cognitive Psychology",
+     "levels": "BIA"
+    },
+    {
+     "k": "Behavioral Psychology",
+     "levels": "BIA"
+    },
+    {
+     "k": "Social Psychology",
+     "levels": "BIA"
+    },
+    {
+     "k": "Developmental Psychology",
+     "levels": "BIA"
+    },
+    {
+     "k": "Personality Psychology",
+     "levels": "BIA"
+    },
+    {
+     "k": "Emotional Intelligence",
+     "levels": "BIA"
+    },
+    {
+     "k": "Memory and Learning",
+     "levels": "BIA"
+    },
+    {
+     "k": "Motivation and Decision-Making",
+     "levels": "BIA"
+    },
+    {
+     "k": "Cognitive Biases",
+     "levels": "BIA"
+    },
+    {
+     "k": "Human Relationships",
+     "levels": "BIA"
+    },
+    {
+     "k": "Psychological Theories",
+     "levels": "BIA"
+    },
+    {
+     "k": "Scientific Research Methods",
+     "levels": "BIA"
+    }
+   ]
+  }
+ ]
+}

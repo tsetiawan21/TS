@@ -1,0 +1,76 @@
+name: Build APK
+on:
+  push:
+    branches: [main, master]
+    paths-ignore: ['**.md', '.gitignore']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: build-apk
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Check the web app (takes seconds, fails early on a typo)
+        run: node scripts/check.mjs
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - name: Stamp the build number into the app
+        run: echo "window.TS_BUILD='${{ github.run_number }}';" > www/version.js
+      - name: Cache Gradle (faster builds after the first)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - name: Install dependencies
+        run: npm install
+      - name: Add Android platform
+        run: npx cap add android
+      - name: Generate app icons
+        continue-on-error: true
+        run: npx capacitor-assets generate --android
+      - name: Add notification permissions
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          for p in POST_NOTIFICATIONS SCHEDULE_EXACT_ALARM VIBRATE; do
+            grep -q "android.permission.$p" "$M" || sed -i "s#<application#<uses-permission android:name=\"android.permission.$p\" />\n    <application#" "$M"
+          done
+          grep -n "uses-permission" "$M"
+      - name: Sync web app into Android project
+        run: npx cap sync android
+      - name: Bump versionCode per build
+        run: sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+      - name: Use the fixed signing key (keeps updates installable)
+        run: |
+          mkdir -p ~/.android
+          cp debug.keystore ~/.android/debug.keystore
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk TS.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ts-apk
+          path: TS.apk
+      - name: Publish release (direct APK download)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: TS build ${{ github.run_number }}
+          body: |
+            TS build ${{ github.run_number }}. Download `TS.apk` on your phone and install it over the old one: your data stays.
+            The build number is shown at the bottom of the Today tab.
+          files: TS.apk

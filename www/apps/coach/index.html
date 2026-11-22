@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Coach</title>
+<link rel="stylesheet" href="../../shared/ts.css">
+<style>
+.tabs{display:flex;gap:2px;padding:3px;background:var(--fill);border-radius:12px;margin:0 0 14px}
+.tabs button{flex:1;border:0;background:none;padding:9px 0;border-radius:9px;color:var(--dim);font-weight:600;font-size:12.5px;text-align:center}
+.tabs button.on{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+@media(prefers-color-scheme:dark){.tabs button.on{background:var(--fg);color:var(--on);box-shadow:none}}
+.sc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.sc .card{margin:0;padding:14px}.sc .eyebrow{font-size:11.5px;color:var(--dim);font-weight:600;margin-bottom:6px}
+.sc b{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.sc span{display:block;color:var(--dim);font-size:12px;margin-top:3px;line-height:1.35}
+.ins{display:flex;gap:12px;padding:13px 0;border-top:1px solid var(--line)}.ins:first-child{border-top:0;padding-top:0}.ins:last-child{padding-bottom:0}
+.ins .chip{flex:none;align-self:flex-start;font-size:11.5px;font-weight:700;min-width:52px;text-align:center;padding:3px 9px}
+.chip.w{background:var(--fg);border-color:var(--fg);color:var(--on)}.ins b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px}.ins p{font-size:13.5px;color:var(--dim)}
+table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--dim);font-weight:600;text-align:right;padding:0 0 8px;font-size:11.5px}th:first-child{text-align:left}
+td{padding:9px 0;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}td:first-child{text-align:left;font-variant-numeric:normal}tr.best td{font-weight:700}
+.eq{width:100%;height:110px;display:block}.eq .z{stroke:var(--line);stroke-dasharray:3 3;fill:none}.eq .l{stroke:var(--fg);fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.eq .d{fill:var(--fg)}
+.gate{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);font-size:14px}.gate:first-of-type{border-top:0}
+.gate i{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700}
+.gate i.ok{background:var(--fg);border-color:var(--fg);color:var(--on)}.gate .t{flex:1}.gate .v{color:var(--dim);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.verdict{border:1.5px solid var(--fg);border-radius:12px;padding:12px 14px;margin-top:12px;font-weight:600;font-size:14px}
+.fc{padding:14px 0;border-top:1px solid var(--line)}.fc:first-of-type{border-top:0;padding-top:0}.fc .h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}.fc b{font-size:14.5px}
+.fc p{font-size:13px;color:var(--dim)}
+textarea{width:100%;min-height:210px;resize:vertical;background:var(--fill);border:0;border-radius:12px;padding:12px;color:var(--fg);font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace}
+.empty{padding:6px 0;color:var(--dim);font-size:14px}
+.spark .ax{fill:var(--dim);font-size:9.5px;font-weight:600}.spark .vl{fill:var(--fg);font-size:10px;font-weight:700}.spark .gt{fill:var(--dim);font-size:9px;font-weight:600}
+.spark .bv{fill:var(--fg)}
+.trk{display:grid;gap:4px}.sub{color:var(--dim);font-size:12.5px;margin:-6px 0 12px}
+</style></head><body>
+<div class="page" id="v"></div><div id="toast"></div>
+<script src="../../shared/ts.js"></script>
+<script src="../goals/curriculum.js"></script>
+<script>
+(function(){
+'use strict';
+const DAY=864e5,p2=n=>String(n).padStart(2,'0');
+const dkey=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const sod=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+const sow=d=>{const s=sod(d);s.setDate(s.getDate()-((s.getDay()+6)%7));return s};
+const fmtH=m=>(Math.round(m/6)/10)+'h',fmtDur=m=>Math.floor(m/60)+'h '+p2(Math.round(m%60))+'m';
+const fmtR=r=>(r>=0?'+':'')+r.toFixed(2)+'R',mon=d=>d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0,sum=a=>a.reduce((x,y)=>x+y,0);
+function rd(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+function load(){const D=window.__DEMO__||{G:rd('futuregoals.v1'),T:rd('trading-routine-tracker.v1'),BH:rd('apex_history'),BP:rd('apex_profile')};
+  return{G:D.G||{},T:(D.T&&!D.T.sample)?D.T:{},BH:Array.isArray(D.BH)?D.BH:[],BP:D.BP||{}}}
+const berserkerDay=e=>{const ts=Number(String(e.id||'').split('-').pop());return ts>1e12?dkey(new Date(ts)):e.date};
+const GR={'English':'English & IELTS','IELTS':'English & IELTS','GMAT/GRE':'GMAT & Maths','Mathematics':'GMAT & Maths','Business Analytics':'Business & Portfolio','Finance & Accounting':'Business & Portfolio','Business Strategy':'Business & Portfolio','Leadership & Management':'Business & Portfolio','Professional Portfolio':'Business & Portfolio','Entrepreneurship & Income':'Business & Portfolio','MBA & Scholarship Research':'MBA & Research','Trading':'Trading','Financial & Business Education':'Learning Path','Economics':'Learning Path','Philosophy':'Learning Path','Body Language':'Learning Path','Art History':'Learning Path','Geopolitics':'Learning Path','Culinary Basics':'Learning Path','Psychology':'Learning Path'};
+const PHASES=[{end:'2027-01-31'},{end:'2027-04-30'},{end:'2027-07-31'},{end:'2027-10-31'},{end:'2028-01-31'},{end:'2028-04-30'},{end:'2028-07-31'},{end:'2028-08-31'}];
+const SETUPS={sweep:'Liquidity sweep',htf:'HTF mitigation',orb:'Opening range breakout',pullback:'Trend pullback',newsfade:'News fade'};
+const MISTAKES={early_exit:'Early exit',moved_sl:'Moved SL',oversized:'Oversized',chased:'Chased entry',revenge:'Revenge trade',ignored:'Ignored plan',overtraded:'Overtraded'};
+const S={tab:'review',per:'this',risk:0.5,dd:8};
+let REPORT='';
+// ---------- data helpers ----------
+const sessions=D=>(D.G.sessions||[]).filter(s=>s&&s.started_at);
+const inRange=(ts,a,b)=>ts>=a.getTime()&&ts<b.getTime();
+const learnMin=D=>{const g=D.G.settings||{};return 'learnMin' in g?(g.learnMin||0):180};
+const LEARN_CATS=['Financial & Business Education','Economics','Philosophy','Body Language','Art History','Geopolitics','Culinary Basics','Psychology'];
+const goalMin=D=>900+((D.G.settings&&D.G.settings.tradingMin)||0)+learnMin(D);
+function closedTrades(D){return((D.T&&D.T.trades)||[]).filter(t=>t.status==='closed'&&typeof t.r==='number').sort((a,b)=>(a.ts||0)-(b.ts||0)||(a.date<b.date?-1:a.date>b.date?1:0))}
+function tstats(ts){
+  const rs=ts.map(t=>t.r),w=rs.filter(r=>r>0),l=rs.filter(r=>r<0),n=rs.length;
+  let cum=0,pk=0,dd=0,run=0,maxRun=0;const curve=[];
+  rs.forEach(r=>{cum+=r;curve.push(cum);if(cum>pk)pk=cum;dd=Math.max(dd,pk-cum);if(r<0){run++;maxRun=Math.max(maxRun,run)}else run=0});
+  return{n,rs,wins:w.length,losses:l.length,wr:n?w.length/n*100:0,avgW:mean(w),avgL:Math.abs(mean(l)),exp:mean(rs),total:sum(rs),pf:l.length?sum(w)/Math.abs(sum(l)):(w.length?Infinity:0),dd,maxRun,curve,
+    adh:n?mean(ts.map(t=>t.rules==null?1:t.rules))*100:0}
+}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function monte(rs,risk,N,runs){
+  const rnd=mulberry(Math.round(sum(rs)*1000)+rs.length*7919),fin=[],dds=[];
+  for(let i=0;i<runs;i++){let eq=1,pk=1,dd=0;for(let j=0;j<N;j++){eq*=1+risk/100*rs[Math.floor(rnd()*rs.length)];if(eq>pk)pk=eq;const d=1-eq/pk;if(d>dd)dd=d}fin.push((eq-1)*100);dds.push(dd*100)}
+  fin.sort((a,b)=>a-b);dds.sort((a,b)=>a-b);const q=(a,p)=>a[Math.min(a.length-1,Math.floor(p*a.length))],pc=(a,f)=>a.filter(f).length/runs*100;
+  return{med:q(fin,.5),p5:q(fin,.05),p95:q(fin,.95),pPos:pc(fin,x=>x>0),medDD:q(dds,.5),worstDD:dds[dds.length-1],pDD10:pc(dds,x=>x>=10),pDD20:pc(dds,x=>x>=20)}
+}
+// ---------- review ----------
+function period(){const now=new Date(),a=S.per==='this'?sow(now):addDays(sow(now),-7);return{a,b:addDays(a,7),now}}
+function scorecard(D){
+  const {a,b}=period(),ss=sessions(D).filter(s=>inRange(s.started_at,a,b)),m=sum(ss.map(s=>s.duration_ms))/60000;
+  const days=new Set(ss.map(s=>dkey(new Date(s.started_at)))),u=ss.filter(s=>s.understanding).map(s=>s.understanding);
+  const ka=dkey(a),kb=dkey(addDays(b,-1)),wk=D.BH.filter(e=>{const k=berserkerDay(e);return k>=ka&&k<=kb});
+  const tr=closedTrades(D).filter(t=>t.date>=ka&&t.date<=kb),ts=tstats(tr);
+  return{m,goal:goalMin(D),n:ss.length,days:days.size,avgU:u.length?mean(u):null,wk:wk.length,xp:sum(wk.map(e=>e.xpGained||0)),streak:D.BP.streak||0,tr,ts}
+}
+function insights(D){
+  const out=[],now=new Date(),add=(sev,title,text)=>out.push({sev,title,text}),ss=sessions(D),P=period(),sc=scorecard(D);
+  // pace
+  if(S.per==='this'){const dow=(now.getDay()+6)%7,frac=Math.min(1,(dow+now.getHours()/24)/7),exp=sc.goal*frac;
+    if(dow>=1&&sc.m<exp*.7)add(2,'Behind this week\'s pace',`You have ${fmtH(sc.m)} of ${fmtH(sc.goal)} and should be near ${fmtH(exp)} by now. Put one long block on your next day off rather than cramming the last two days.`);
+    else if(sc.m>=exp)add(0,'On pace this week',`${fmtH(sc.m)} of ${fmtH(sc.goal)} done, ahead of the ${fmtH(exp)} expected by now.`)}
+  else add(sc.m>=sc.goal*.9?0:1,`Last week: ${Math.round(sc.m/sc.goal*100)}% of goal`,`${fmtH(sc.m)} of ${fmtH(sc.goal)} across ${sc.n} sessions on ${sc.days} days.`);
+  // neglected groups, last 14 days
+  const from14=now.getTime()-14*DAY,by={};ss.filter(s=>s.started_at>=from14).forEach(s=>{const g=GR[s.category]||'Other';by[g]=(by[g]||0)+s.duration_ms/60000});
+  const tg={'English & IELTS':360,'GMAT & Maths':240,'Business & Portfolio':180,'MBA & Research':120};if(D.G.settings&&D.G.settings.tradingMin)tg['Trading']=D.G.settings.tradingMin;if(learnMin(D)>0)tg['Learning Path']=learnMin(D);
+  if(ss.length>=5)Object.keys(tg).forEach(g=>{const m=by[g]||0;if(m===0)add(2,`No ${g} study in 14 days`,`Its weekly target is ${fmtH(tg[g])}. Even one 45-minute block this week keeps the lessons from going cold.`);else if(m<tg[g]*2*.4)add(1,`${g} is under target`,`${fmtH(m)} in two weeks against ${fmtH(tg[g]*2)} planned.`)});
+  // low understanding, last 21 days
+  const bc={};ss.filter(s=>s.started_at>=now.getTime()-21*DAY&&s.understanding).forEach(s=>{(bc[s.category]=bc[s.category]||[]).push(s.understanding)});
+  Object.keys(bc).forEach(c=>{const u=mean(bc[c]);if(bc[c].length>=2&&u<=2.5)add(2,`${c} understanding is low (${u.toFixed(1)}/5)`,'Redo the last lesson and pass its "done when" test before moving on. Reviews are scheduled for the lessons you rated low.')});
+  // best time of day
+  const bk=h=>h>=5&&h<11?'morning':h>=11&&h<17?'afternoon':h>=17&&h<22?'evening':'late night',tb={};
+  ss.filter(s=>s.understanding).forEach(s=>{const k=bk(new Date(s.started_at).getHours());(tb[k]=tb[k]||[]).push(s.understanding)});
+  const ks=Object.keys(tb).filter(k=>tb[k].length>=3);if(ks.length>=2){ks.sort((x,y)=>mean(tb[y])-mean(tb[x]));const hi=ks[0],lo=ks[ks.length-1];
+    if(mean(tb[hi])-mean(tb[lo])>=.5)add(1,`You learn best in the ${hi}`,`Understanding averages ${mean(tb[hi]).toFixed(1)}/5 in the ${hi} against ${mean(tb[lo]).toFixed(1)}/5 in the ${lo}. Put your hardest lesson in the ${hi}.`)}
+  // consistency
+  const act=new Set(ss.filter(s=>s.started_at>=now.getTime()-14*DAY).map(s=>dkey(new Date(s.started_at))));
+  if(ss.length>=5){if(act.size>=10)add(0,`Studied on ${act.size} of the last 14 days`,'That consistency is what compounds. Protect the routine on busy days with a 25-minute minimum.');else if(act.size<=5)add(2,`Only ${act.size} study days in the last 14`,'A short daily session beats long irregular ones. Set a 25-minute minimum for every day.')}
+  // training vs study
+  const wd=new Set(D.BH.map(berserkerDay)),dm={};ss.filter(s=>s.started_at>=now.getTime()-28*DAY).forEach(s=>{const k=dkey(new Date(s.started_at));dm[k]=(dm[k]||0)+s.duration_ms/60000});
+  const w=[],r=[];for(let i=0;i<28;i++){const k=dkey(addDays(sod(now),-i));(wd.has(k)?w:r).push(dm[k]||0)}
+  if(w.length>=4&&r.length>=4){const dif=mean(w)-mean(r);if(Math.abs(dif)>=15)add(1,dif>0?'You study more on training days':'Training days cost you study time',`Average ${Math.round(mean(w))} min on days you train against ${Math.round(mean(r))} min on rest days. This is a pattern, not proof of cause.${dif<0?' Try studying before training.':''}`)}
+  // training
+  if(D.BP.streak>=3)add(0,`${D.BP.streak}-day training streak`,'Keep it: it is the habit most likely to carry the others.');
+  if(S.per==='this'&&sc.wk===0&&((now.getDay()+6)%7)>=3)add(1,'No workout logged this week','It is midweek. A 20-minute session today keeps the streak alive.');
+  // trading
+  const ct=closedTrades(D),rec=ct.slice(-30);
+  if(rec.length>=5){const st=tstats(rec);
+    if(st.adh<90)add(2,`Rule adherence is ${Math.round(st.adh)}%`,'Your own gate is 90%. Until adherence is above it, results say little about the strategy.');else add(0,`Rule adherence is ${Math.round(st.adh)}%`,'Above your 90% gate. Keep logging every trade honestly.');
+    const hi=rec.filter(t=>(t.rules==null?1:t.rules)>=.9),lo=rec.filter(t=>(t.rules==null?1:t.rules)<.9);
+    if(hi.length>=3&&lo.length>=3)add(1,'Discipline and results',`Trades that followed the rules averaged ${fmtR(mean(hi.map(t=>t.r)))}; the others ${fmtR(mean(lo.map(t=>t.r)))}.`);
+    const mc={};rec.forEach(t=>(t.mistakes||[]).forEach(k=>{const e=mc[k]||(mc[k]={n:0,r:0});e.n++;e.r+=t.r}));
+    const top=Object.keys(mc).filter(k=>mc[k].n>=2).sort((x,y)=>mc[x].r-mc[y].r)[0];if(top)add(2,`Costliest mistake: ${MISTAKES[top]||top}`,`${mc[top].n} trades, ${fmtR(mc[top].r)} in total. Write one rule that prevents it.`);
+    if(rec.length<30)add(1,'Small sample',`${rec.length} closed trades. Avoid conclusions about your edge until you have 100.`)}
+  // backup
+  const lb=Number(localStorage.getItem('hub.lastBackup')||0);if(!window.__DEMO__&&(ss.length||ct.length)&&(!lb||Date.now()-lb>7*DAY))add(1,'Back up your data','Everything lives on this phone. Export a backup from the Today tab.');
+  return out.sort((x,y)=>y.sev-x.sev).slice(0,7);
+}
+function reviewHtml(D){
+  const sc=scorecard(D),ins=insights(D),ts=sc.ts;
+  const tag=['Good','Tip','Watch'];
+  return`<div class="tabs" style="margin-top:-2px"><button class="${S.per==='this'?'on':''}" data-a="per|this">This week</button><button class="${S.per==='last'?'on':''}" data-a="per|last">Last week</button></div>
+  <div class="sc"><section class="card"><div class="eyebrow">Study</div><b>${fmtH(sc.m)}</b><span>of ${fmtH(sc.goal)}, ${sc.n} sessions, ${sc.days} days${sc.avgU!=null?', understanding '+sc.avgU.toFixed(1)+'/5':''}</span></section>
+  <section class="card"><div class="eyebrow">Training</div><b>${sc.wk}</b><span>workout${sc.wk===1?'':'s'}, ${sc.xp} XP, ${sc.streak}-day streak</span></section>
+  <section class="card"><div class="eyebrow">Trading</div><b>${ts.n?fmtR(ts.total):'None'}</b><span>${ts.n?ts.n+' closed, '+Math.round(ts.wr)+'% wins, rules '+Math.round(ts.adh)+'%':'no closed trades'}</span></section></div>
+  <section class="card"><div class="ch"><h2>What the data says</h2><span class="tag">${ins.length} finding${ins.length===1?'':'s'}</span></div>${ins.length?ins.map(i=>`<div class="ins"><span class="chip${i.sev===2?' w':''}">${tag[i.sev]}</span><div><b>${esc(i.title)}</b><p>${esc(i.text)}</p></div></div>`).join(''):'<p class="empty">Log a few study sessions, workouts or trades and findings will appear here.</p>'}</section>
+  <p class="note center">Calculated on your phone from your own data. Patterns are not proof of cause.</p>`;
+}
+// ---------- trading lab ----------
+function groupBy(ts,fn,names){const m={};ts.forEach(t=>{const k=fn(t);if(!k)return;(m[k]=m[k]||[]).push(t)});return Object.keys(m).map(k=>({k:names?names[k]||k:k,n:m[k].length,wr:m[k].filter(t=>t.r>0).length/m[k].length*100,avg:mean(m[k].map(t=>t.r)),tot:sum(m[k].map(t=>t.r))})).sort((a,b)=>b.n-a.n)}
+function tableHtml(title,rows){if(!rows.length)return'';const best=rows.filter(r=>r.n>=5).sort((a,b)=>b.avg-a.avg)[0];
+  return`<section class="card"><div class="ch"><h2>${title}</h2></div><table><tr><th>${title.replace('By ','')}</th><th>Trades</th><th>Win %</th><th>Avg R</th></tr>${rows.map(r=>`<tr class="${best&&r===best?'best':''}"><td>${esc(r.k)}</td><td>${r.n}</td><td>${Math.round(r.wr)}%</td><td>${fmtR(r.avg)}</td></tr>`).join('')}</table>${best?'<p class="note">Bold marks the best average R among groups with 5 or more trades.</p>':'<p class="note">Groups need 5 trades before one is marked best.</p>'}</section>`}
+function eqSvg(c){if(c.length<2)return'';const w=300,h=110,mn=Math.min(0,...c),mx=Math.max(0,...c),sp=(mx-mn)||1,x=i=>i/(c.length-1)*(w-8)+4,y=v=>h-8-(v-mn)/sp*(h-16);
+  return`<svg class="eq" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path class="z" d="M0 ${y(0).toFixed(1)}H${w}"/><path class="l" d="${c.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join('')}"/><circle class="d" cx="${x(c.length-1).toFixed(1)}" cy="${y(c[c.length-1]).toFixed(1)}" r="3.5"/></svg>`}
+function gateRows(ts,st){
+  const last=ts.slice(-30),adh=last.length?mean(last.map(t=>t.rules==null?1:t.rules))*100:0;
+  const sorted=st.rs.slice().sort((a,b)=>b-a),trim=sum(sorted.slice(2));
+  const g=[[st.n>=100,'100 trades logged',st.n+' of 100'],[adh>=90,'Rules followed on 90% or more (last 30)',Math.round(adh)+'%'],[st.exp>0,'Positive expectancy in your journal',fmtR(st.exp)],[st.dd<=S.dd,`Max drawdown within ${S.dd}R`,st.dd.toFixed(1)+'R'],[st.n>=5&&trim>0,'Still positive without the 2 best trades',st.n>=5?fmtR(trim/Math.max(1,st.n-2)):'n/a']];
+  return{g,pass:g.filter(x=>x[0]).length}
+}
+function labHtml(D){
+  const ts=closedTrades(D);if(ts.length<5)return`<section class="card"><div class="ch"><h2>Trading lab</h2></div><p class="empty">Close at least 5 trades in the Trading tab. The lab shows your edge, discipline, risk simulation and demo gate from your real journal, and works better from 30 trades up.</p></section>`;
+  const st=tstats(ts);let h=`<section class="card"><div class="ch"><h2>Your numbers</h2><span class="tag">${st.n} closed trades</span></div><div class="kv"><div><b>${fmtR(st.exp)}</b><span>expectancy per trade</span></div><div><b>${Math.round(st.wr)}%</b><span>win rate</span></div><div><b>${st.pf===Infinity?'inf':st.pf.toFixed(2)}</b><span>profit factor</span></div><div><b>${st.avgW.toFixed(2)} / ${st.avgL.toFixed(2)}</b><span>avg win / avg loss (R)</span></div><div><b>${st.dd.toFixed(1)}R</b><span>max drawdown</span></div><div><b>${st.maxRun}</b><span>longest losing run</span></div></div><div style="margin-top:16px">${eqSvg(st.curve)}</div><p class="note">Cumulative R across your closed trades, in order.</p></section>`;
+  h+=tableHtml('By setup',groupBy(ts,t=>t.setup,SETUPS))+tableHtml('By session',groupBy(ts,t=>t.session))+tableHtml('By instrument',groupBy(ts,t=>t.instrument));
+  const hi=ts.filter(t=>(t.rules==null?1:t.rules)>=.9),lo=ts.filter(t=>(t.rules==null?1:t.rules)<.9),mc={};ts.forEach(t=>(t.mistakes||[]).forEach(k=>{const e=mc[k]||(mc[k]={n:0,r:0});e.n++;e.r+=t.r}));
+  const mrows=Object.keys(mc).sort((x,y)=>mc[x].r-mc[y].r).slice(0,5);
+  h+=`<section class="card"><div class="ch"><h2>Discipline</h2></div><table><tr><th>Group</th><th>Trades</th><th>Avg R</th></tr><tr><td>Rules followed (90%+)</td><td>${hi.length}</td><td>${hi.length?fmtR(mean(hi.map(t=>t.r))):'n/a'}</td></tr><tr><td>Rules broken</td><td>${lo.length}</td><td>${lo.length?fmtR(mean(lo.map(t=>t.r))):'n/a'}</td></tr></table>${mrows.length?`<table style="margin-top:14px"><tr><th>Mistake</th><th>Trades</th><th>Total R</th></tr>${mrows.map(k=>`<tr><td>${esc(MISTAKES[k]||k)}</td><td>${mc[k].n}</td><td>${fmtR(mc[k].r)}</td></tr>`).join('')}</table>`:''}</section>`;
+  // Monte Carlo
+  if(st.n>=10){const mcr=monte(st.rs,S.risk,100,2000);
+    h+=`<section class="card"><div class="ch"><h2>Risk simulation</h2><div class="seg">${[.25,.5,1].map(r=>`<button class="${S.risk===r?'on':''}" data-a="risk|${r}">${r}%</button>`).join('')}</div></div>
+    <p class="dim sm" style="margin-bottom:14px">2,000 imagined runs of the next 100 trades, drawing randomly from your own ${st.n} results at ${S.risk}% risk per trade.</p>
+    <div class="kv"><div><b>${mcr.med>=0?'+':''}${mcr.med.toFixed(1)}%</b><span>typical result after 100 trades</span></div><div><b>${mcr.p5.toFixed(1)}%</b><span>bad case (5th percentile)</span></div><div><b>${Math.round(mcr.pPos)}%</b><span>of runs end in profit</span></div><div><b>${mcr.medDD.toFixed(1)}%</b><span>typical worst drawdown</span></div><div><b>${Math.round(mcr.pDD10)}%</b><span>chance of a 10% drawdown</span></div><div><b>${Math.round(mcr.pDD20)}%</b><span>chance of a 20% drawdown</span></div></div>
+    <p class="note">${st.n<50?`Only ${st.n} trades: treat this as a rough sketch. `:''}It assumes your future trades look like your past ones, which is the weak point. A real edge needs a larger sample and live conditions.</p></section>`}
+  // gate
+  const G=gateRows(ts,st);
+  h+=`<section class="card"><div class="ch"><h2>Demo gate</h2><div class="seg">${[5,8,10].map(r=>`<button class="${S.dd===r?'on':''}" data-a="dd|${r}">${r}R</button>`).join('')}</div></div>${G.g.map(x=>`<div class="gate"><i class="${x[0]?'ok':''}">${x[0]?'✓':''}</i><span class="t">${x[1]}</span><span class="v">${x[2]}</span></div>`).join('')}
+  <div class="verdict">${G.pass===5?'All 5 checks pass. You may consider going live very small.':G.pass+' of 5 checks pass. Stay on demo until all 5 do.'}</div>
+  <p class="note">The gate counts every closed trade in your Trading tab, so only log demo trades there while you are on demo. Passing shows you can follow your plan. It does not guarantee future profit. Drawdown limit is yours to set above.</p></section>`;
+  return h;
+}
+// ---------- forecast ----------
+function forecast(D){
+  const G=D.G,L=G.lessons||{},tm=(G.settings&&G.settings.tradingMin)||0,now=new Date();
+  const tg={'English & IELTS':360,'GMAT & Maths':240,'Business & Portfolio':180,'MBA & Research':120};if(tm)tg['Trading']=tm;
+  const rem=(sub,P)=>CURR[sub].reduce((a,l,i)=>{if(l.p>P)return a;const s=L[sub+'#'+i]||{};return(s.done||(s.min||0)>=l.m)?a:a+l.m-(s.min||0)},0);
+  const act={};Object.keys(CURR).forEach(sub=>{if(sub==='Trading'&&!tm)return;if(rem(sub,8)>0)act[GR[sub]]=(act[GR[sub]]||0)+1});
+  const from=now.getTime()-28*DAY,rows=[];
+  Object.keys(CURR).forEach(sub=>{
+    if(sub==='Trading'&&!tm){rows.push({sub,off:1});return}
+    const total=rem(sub,8);if(total<=0){rows.push({sub,done:1});return}
+    const planned=(tg[GR[sub]]||0)/(act[GR[sub]]||1),meas=sessions(D).filter(s=>s.category===sub&&s.started_at>=from).reduce((a,s)=>a+s.duration_ms/60000,0)/4;
+    const useM=meas>=15,rate=Math.max(1,useM?meas:planned);let worst=null;
+    if(sub!=='Trading')[...new Set(CURR[sub].map(l=>l.p))].sort((a,b)=>a-b).forEach(P=>{const need=rem(sub,P);if(need<=0)return;const dl=new Date(PHASES[P-1].end+'T23:59:59'),wks=(dl-now)/(7*DAY),fin=addDays(now,need/rate*7),slack=(dl-fin)/DAY;if(!worst||slack<worst.slack)worst={P,need,dl,fin,slack,req:wks>0?need/wks:Infinity}});
+    rows.push({sub,total,rate,useM,worst,fin:addDays(now,total/rate*7)});
+  });
+  return rows;
+}
+function forecastHtml(D){
+  const rows=forecast(D),st=r=>r.worst?(r.worst.slack>=0?0:r.worst.slack>=-28?1:2):0;
+  const act=rows.filter(r=>!r.off&&!r.done).sort((a,b)=>st(b)-st(a)||(a.worst?a.worst.slack:1e9)-(b.worst?b.worst.slack:1e9)),late=act.filter(r=>st(r)===2).length;
+  const lab=['On track','Tight','Behind'];
+  return`<section class="card"><div class="ch"><h2>Roadmap forecast</h2><span class="tag">${late?late+' behind':'no subject behind'}</span></div>${act.length?act.map(r=>`<div class="fc"><div class="h"><b>${esc(r.sub)}</b><span class="chip${st(r)===2?' w':''}">${r.worst?lab[st(r)]:'Open'}</span></div>
+    <p>${fmtH(r.total)} left at ${fmtH(r.rate)} per week (${r.useM?'your last 4 weeks':'planned share'}). Finishes around ${mon(r.fin)}.</p>
+    ${r.worst?`<p>Needs ${fmtH(r.worst.need)} by the end of phase ${r.worst.P} (${mon(r.worst.dl)}).${st(r)>0?` To make it you need ${isFinite(r.worst.req)?fmtH(r.worst.req):'more time'} per week instead of ${fmtH(r.rate)}.`:''}</p>`:'<p>No roadmap deadline: this is your own pace.</p>'}</div>`).join(''):'<p class="empty">All lessons are complete, or no lessons are set up yet.</p>'}
+  <p class="note">Planned pace splits each group's weekly target between its subjects, and your real schedule rotates by phase, so read dates as estimates, not promises.</p></section>`
+}
+// ---------- Claude report ----------
+function buildReport(D){
+  const now=new Date(),ss=sessions(D),wk=[];for(let i=3;i>=0;i--){const a=addDays(sow(now),-7*i);wk.push(Math.round(sum(ss.filter(s=>inRange(s.started_at,a,addDays(a,7))).map(s=>s.duration_ms))/60000))}
+  const bys={};ss.filter(s=>s.started_at>=now.getTime()-28*DAY).forEach(s=>{const e=bys[s.category]||(bys[s.category]={m:0,u:[]});e.m+=s.duration_ms/60000;if(s.understanding)e.u.push(s.understanding)});
+  const L=D.G.lessons||{},prog=Object.keys(CURR).map(sub=>{const done=CURR[sub].filter((l,i)=>{const s=L[sub+'#'+i]||{};return s.done||(s.min||0)>=l.m}).length;return`${sub}: ${done}/${CURR[sub].length}`});
+  const ct=closedTrades(D),st=tstats(ct),F=forecast(D).filter(r=>r.worst);
+  const wd=D.BH.filter(e=>berserkerDay(e)>=dkey(addDays(sod(now),-27))).length;
+  let t=`TS DATA REPORT, ${dkey(now)}\nWeekly study goal: ${fmtH(goalMin(D))}${(D.G.settings&&D.G.settings.tradingMin)||learnMin(D)?' (includes'+(learnMin(D)?' a '+fmtH(learnMin(D))+' learning path':'')+((D.G.settings&&D.G.settings.tradingMin)?(learnMin(D)?' and':'')+' a '+fmtH(D.G.settings.tradingMin)+' trading track':'')+')':''}\n\nSTUDY\nHours per week, oldest to newest: ${wk.map(fmtH).join(', ')}\nLast 28 days by subject (hours, avg understanding 1-5):\n`;
+  t+=Object.keys(bys).sort((a,b)=>bys[b].m-bys[a].m).map(c=>`- ${c}: ${fmtH(bys[c].m)}, ${bys[c].u.length?mean(bys[c].u).toFixed(1):'n/a'}`).join('\n')||'- no sessions';
+  t+=`\nLessons completed: ${prog.join('; ')}\nLearning Path lessons completed (eight categories): ${LEARN_CATS.map(c=>c+' '+Object.keys(L).filter(k=>k.split('#')[0]===c&&L[k]&&L[k].done).length).join(', ')}\n\nTRAINING\nWorkouts in last 28 days: ${wd}, current streak: ${D.BP.streak||0}\n\nTRADING (journal)\n`;
+  t+=ct.length?`Closed trades: ${st.n}, win rate ${Math.round(st.wr)}%, expectancy ${fmtR(st.exp)}, profit factor ${st.pf===Infinity?'inf':st.pf.toFixed(2)}, max drawdown ${st.dd.toFixed(1)}R, longest losing run ${st.maxRun}, rules followed ${Math.round(st.adh)}%\n`:'No closed trades yet\n';
+  if(st.n>=10){const m=monte(st.rs,.5,100,2000);t+=`Simulated 100 trades at 0.5% risk: typical ${m.med.toFixed(1)}%, bad case ${m.p5.toFixed(1)}%, chance of 10% drawdown ${Math.round(m.pDD10)}%\n`}
+  t+=`\nROADMAP FORECAST (to deadlines)\n`+(F.length?F.map(r=>`- ${r.sub}: ${fmtH(r.total)} left, ${fmtH(r.rate)}/week, ${r.worst.slack>=0?'on track':'behind by '+Math.round(-r.worst.slack/7)+' weeks'} for phase ${r.worst.P}`).join('\n'):'- no lessons in progress')+`\n\nI am preparing for an MBA in August 2028 while working shifts and trading intraday forex and gold. Act as my study and trading coach. Use only the data above.\n1. Name the 3 biggest risks to my roadmap and the evidence for each.\n2. Give specific schedule changes for next week.\n3. Point out patterns in my trading discipline and what to test next.\n4. Challenge any assumption in my numbers, including the sample size.\nBe direct.`;
+  return t;
+}
+function claudeHtml(D){REPORT=buildReport(D);
+  return`<section class="card"><div class="ch"><h2>Deeper review with Claude</h2></div><p class="dim sm" style="margin-bottom:12px">This builds a numbers-only summary of the last 4 weeks plus a coaching prompt. Share or paste it into a Claude chat for analysis that goes beyond fixed rules. Nothing is sent from this app: you choose where it goes. It has no notes or free text, only subject names, lesson counts and statistics.</p><textarea id="rep" readonly>${esc(REPORT)}</textarea><div class="acts"><button class="btn" data-a="share">Share</button><button class="btn g" data-a="copy">Copy</button></div></section>`}
+// ---------- trends ----------
+const WD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function barSvg(vals,labels,o){
+  const W=320,H=146,pt=16,pb=20,n=vals.length,gap=n>8?6:10,bw=(W-gap*(n-1))/n,mx=Math.max(o.goal||0,...vals,1),y=v=>pt+(H-pt-pb)*(1-v/mx);
+  let s=`<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label)}" style="height:auto"><path d="M0 ${H-pb}H${W}" stroke="var(--line)" fill="none"/>`;
+  vals.forEach((v,i)=>{const x=i*(bw+gap),h=v>0?Math.max(3,H-pb-y(v)):0,hi=i===o.hi;
+    s+=`<rect class="bv" x="${x.toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="4" opacity="${hi?1:.5}"/><text class="ax" x="${(x+bw/2).toFixed(1)}" y="${H-5}" text-anchor="middle">${labels[i]}</text>`;
+    if(hi&&v>0)s+=`<text class="vl" x="${(x+bw/2).toFixed(1)}" y="${(H-pb-h-5).toFixed(1)}" text-anchor="middle">${o.fmt(v)}</text>`});
+  if(o.goal)s+=`<path d="M0 ${y(o.goal).toFixed(1)}H${W}" stroke="var(--dim)" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>`;
+  return s+'</svg>';
+}
+function lineSvg(vals,labels,o){
+  const W=320,H=120,pl=16,pr=6,pt=8,pb=20,n=vals.length,x=i=>pl+i*(W-pl-pr)/(n-1),y=v=>pt+(H-pt-pb)*(1-(v-1)/4);
+  let s=`<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label)}" style="height:auto">`;
+  [1,3,5].forEach(g=>{s+=`<path class="gl" d="M${pl} ${y(g).toFixed(1)}H${W}"/><text class="ax" x="0" y="${(y(g)+3).toFixed(1)}">${g}</text>`});
+  let d='',pen=false,lastI=-1;
+  vals.forEach((v,i)=>{if(v==null){pen=false;return}d+=(pen?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1);pen=true;lastI=i});
+  s+=`<path class="ln" d="${d}"/>`;
+  vals.forEach((v,i)=>{if(v!=null)s+=`<circle class="${i===lastI?'lp':'pt'}" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${i===lastI?3.5:3}"/>`});
+  labels.forEach((l,i)=>{if(i%2===(n-1)%2)s+=`<text class="ax" x="${x(i).toFixed(1)}" y="${H-5}" text-anchor="middle">${l}</text>`});
+  return s+'</svg>';
+}
+function trendsHtml(D){
+  const I=TS.index(D),now=new Date(),today=dkey(now),ws0=sow(now),ss=sessions(D);
+  if(!ss.length&&!D.BH.length&&!closedTrades(D).length)return`<section class="card"><div class="ch"><h2>Trends</h2></div><p class="empty">Study a few sessions, log workouts or trades, and your 12-week rhythm appears here: weekly hours, your strongest weekday, best time of day and how steady each habit is.</p></section>`;
+  const wk=[];for(let i=11;i>=0;i--){const a=addDays(ws0,-7*i),b=addDays(a,7);let m=0;for(let d=0;d<7;d++)m+=I.facts(dkey(addDays(a,d))).study.min;
+    const u=ss.filter(x=>inRange(x.started_at,a,b)&&x.understanding).map(x=>x.understanding);wk.push({a,m,u:u.length?mean(u):null})}
+  const goal=goalMin(D),f0=Math.max(0,wk.findIndex(w=>w.m>0)),done=wk.slice(f0,11),avg=done.length?mean(done.map(w=>w.m)):wk[11].m,bestW=Math.max(...wk.map(w=>w.m));
+  const hiW=wk.reduce((b,w,i)=>w.m>wk[b].m?i:b,0);
+  // weekday pattern, last 84 days
+  const wsum=Array(7).fill(0),wn=Array(7).fill(0);
+  for(let i=0;i<84;i++){const d=addDays(sod(now),-i),k=dkey(d);if(k===today&&!I.facts(k).study.min)continue;const w=(d.getDay()+6)%7;wsum[w]+=I.facts(k).study.min;wn[w]++}
+  const wavg=wsum.map((v,i)=>wn[i]?v/wn[i]:0),bi=wavg.indexOf(Math.max(...wavg)),li=wavg.indexOf(Math.min(...wavg));
+  // time of day, last 84 days of sessions
+  const BK=[['Early, 5 to 9',5,9],['Morning, 9 to 12',9,12],['Afternoon, 12 to 17',12,17],['Evening, 17 to 21',17,21],['Night, 21 to 5',21,29]],tb=BK.map(()=>0),from=now.getTime()-84*DAY;
+  ss.filter(x=>x.started_at>=from).forEach(x=>{let h=new Date(x.started_at).getHours();if(h<5)h+=24;const i=BK.findIndex(b=>h>=b[1]&&h<b[2]);if(i>=0)tb[i]+=x.duration_ms/60000});
+  const tt=sum(tb),ti=tb.indexOf(Math.max(...tb));
+  // habit rates, 28 complete days (today not counted) and weekdays only for trading
+  const R={study:0,train:0,trade:0},N={study:28,train:28,trade:0};let perfect=0;
+  for(let i=1;i<=28;i++){const d=addDays(sod(now),-i),k=dkey(d),f=I.facts(k),wd=d.getDay()>0&&d.getDay()<6;
+    if(f.study.lvl>=2)R.study++;if(f.train.lvl>=2)R.train++;if(wd){N.trade++;if(f.trade.lvl>=2)R.trade++}if(I.score(k)===3)perfect++}
+  const pc=(a,b)=>b?Math.round(a/b*100):0,rows=[['Study',pc(R.study,N.study)],['Training',pc(R.train,N.train)],['Trading',pc(R.trade,N.trade)]],topR=Math.max(...rows.map(r=>r[1]));
+  const un=wk.filter(w=>w.u!=null);
+  return`<section class="card"><div class="ch"><h2>Your rhythm</h2><span class="tag">last 12 weeks</span></div>
+  <div class="ins"><span class="chip">Pace</span><div><b>${fmtH(avg)} a week on average</b><p>${Math.round(avg/goal*100)}% of your ${fmtH(goal)} goal. Best week: ${fmtH(bestW)}.</p></div></div>
+  ${wsum.some(v=>v>0)?`<div class="ins"><span class="chip">Day</span><div><b>${WD[bi]} is your strongest day</b><p>Average ${fmtDur(wavg[bi])}${wavg[li]<wavg[bi]*.5?`, against ${fmtDur(wavg[li])} on ${WD[li]}. Protect a block on ${WD[li]}.`:'. Your week is evenly spread.'}</p></div></div>`:''}
+  ${tt>0?`<div class="ins"><span class="chip">Time</span><div><b>${BK[ti][0].split(',')[0]} is when you study most</b><p>${Math.round(tb[ti]/tt*100)}% of your study minutes start between ${BK[ti][1]%24}:00 and ${BK[ti][2]%24}:00.</p></div></div>`:''}</section>
+  <section class="card"><div class="ch"><h2>Study per week</h2><span class="tag">${fmtH(wk[11].m)} this week</span></div>${barSvg(wk.map(w=>w.m),wk.map(w=>w.a.getDate()),{goal,hi:hiW,fmt:fmtH,label:'Study hours per week for the last 12 weeks'})}<p class="note">Bars are hours studied in each week, labelled by the Monday. The dashed line is your weekly goal (${fmtH(goal)}). The darkest bar is your best week.</p></section>
+  <section class="card"><div class="ch"><h2>Study by weekday</h2><span class="tag">average per day</span></div>${barSvg(wavg,WD.map(w=>w[0]),{hi:bi,fmt:v=>fmtDur(v),label:'Average study minutes per weekday'})}</section>
+  <section class="card"><div class="ch"><h2>How steady are you?</h2><span class="tag">${perfect} perfect day${perfect===1?'':'s'} in 28</span></div><div class="trk">${rows.map(r=>`<div class="hb${r[1]===topR?' hi':''}"><span>${r[0]}</span><span class="tr"><i style="width:${r[1]}%"></i></span><span class="v">${r[1]}%</span></div>`).join('')}</div><p class="note">Share of the last 28 complete days on which each habit was done. Trading counts weekdays only. A perfect day is all three done.</p></section>
+  ${tt>0?`<section class="card"><div class="ch"><h2>When you study</h2><span class="tag">by start time</span></div><div class="trk">${BK.map((b,i)=>`<div class="hb${i===ti?' hi':''}" style="grid-template-columns:118px 1fr 40px"><span>${b[0]}</span><span class="tr"><i style="width:${Math.round(tb[i]/Math.max(...tb)*100)}%"></i></span><span class="v">${Math.round(tb[i]/tt*100)}%</span></div>`).join('')}</div></section>`:''}
+  ${un.length>=3?`<section class="card"><div class="ch"><h2>Understanding</h2><span class="tag">weekly average, 1 to 5</span></div>${lineSvg(wk.map(w=>w.u),wk.map(w=>w.a.getDate()),{label:'Average understanding rating per week'})}<p class="note">Your own rating after each session. A falling line while hours rise usually means you are moving too fast.</p></section>`:''}
+  <p class="note center">Calculated on your phone from your own data. Patterns are not proof of cause.</p>`;
+}
+// ---------- shell ----------
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),3000)}
+function plug(n){try{const C=window.parent&&window.parent.Capacitor||window.Capacitor;return C&&C.Plugins&&C.Plugins[n]||null}catch(e){return null}}
+async function doShare(){const SH=plug('Share');try{if(SH)await SH.share({title:'TS data report',text:REPORT,dialogTitle:'Send to Claude'});else if(navigator.share)await navigator.share({title:'TS data report',text:REPORT});else{doCopy();return}}catch(e){toast('Share cancelled')}}
+async function doCopy(){try{await navigator.clipboard.writeText(REPORT);toast('Copied. Paste it into a Claude chat.')}catch(e){const t=document.getElementById('rep');if(t){t.focus();t.select();toast('Select all and copy it by hand.')}}}
+function render(){
+  const D=load(),tabs=[['review','Review'],['trends','Trends'],['lab','Lab'],['forecast','Forecast'],['claude','Claude']];
+  const body=S.tab==='review'?reviewHtml(D):S.tab==='trends'?trendsHtml(D):S.tab==='lab'?labHtml(D):S.tab==='forecast'?forecastHtml(D):claudeHtml(D);
+  const y=document.getElementById('v').scrollTop;
+  document.getElementById('v').innerHTML=`<div class="greet"><h1>Coach</h1><p>Patterns, risk and deadlines from your own data.</p></div><div class="tabs">${tabs.map(t=>`<button class="${S.tab===t[0]?'on':''}" data-a="tab|${t[0]}">${t[1]}</button>`).join('')}</div>${body}`;
+  document.getElementById('v').scrollTop=y;
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const [k,v]=b.dataset.a.split('|');
+  if(k==='tab'){S.tab=v;document.getElementById('v').scrollTop=0;render()}else if(k==='per'){S.per=v;render()}else if(k==='risk'){S.risk=Number(v);render()}else if(k==='dd'){S.dd=Number(v);render()}else if(k==='share')doShare();else if(k==='copy')doCopy()});
+TS.onData(()=>{const a=document.activeElement;if(a&&a.tagName==='TEXTAREA'&&a.id!=='rep')return;render()});
+window.__coach={S,render,monte,tstats,closedTrades,forecast,buildReport,insights,gateRows,trendsHtml};
+render();
+})();
+</script>
+</body></html>
